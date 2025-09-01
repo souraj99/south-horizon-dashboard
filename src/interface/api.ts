@@ -94,3 +94,39 @@ export interface Product {
 export type GetProductsResponse = {
   products: GenericRecord[];
 };
+export type GetCategoriesResponse = {
+  categories: GenericRecord[];
+};
+
+export interface CouponRequest {
+  code: string;
+  description: string;
+  discount: number;
+  discountType: "percentage" | "fixed";
+  expiresAt: string;
+  maxUses: number;
+  usedCount: number;
+  minOrderAmount: number;
+  isActive: boolean;
+}
+
+export interface CouponResponse extends BaseResponse {
+  data: CouponRequest;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string;
+  discount: number;
+  discountType: "percentage" | "fixed";
+  expiresAt: string;
+  maxUses: number;
+  usedCount: number;
+  minOrderAmount: number;
+  isActive: boolean;
+}
+
+export type GetCouponsResponse = {
+  coupons: GenericRecord[];
+};

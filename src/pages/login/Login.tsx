@@ -51,7 +51,7 @@ const Login = () => {
             isHeaderRefresh: false,
           })
         );
-        navigate(ROUTES.PENDING);
+        navigate(ROUTES.PRODUCTS);
       })
       .catch((err) => {
         console.log("err", err);

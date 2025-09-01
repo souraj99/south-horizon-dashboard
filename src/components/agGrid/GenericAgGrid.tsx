@@ -85,7 +85,7 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
         } else if (type === "orders") {
           setRowData(res.data.approvedList);
         } else if (type === "coupons") {
-          setRowData(res.data.rejectedList);
+          setRowData(res);
         }
         setLoading(false);
         store.dispatch(setIsRefreshed(false));
@@ -159,6 +159,14 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
               onClick={() => navigate(ROUTES.ADD_PRODUCT)}
             >
               Add Product
+            </button>
+          )}
+          {type === "coupons" && (
+            <button
+              className="add-campaign-button"
+              onClick={() => navigate(ROUTES.ADD_COUPON)}
+            >
+              Add Coupon
             </button>
           )}
 

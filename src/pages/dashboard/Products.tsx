@@ -16,8 +16,9 @@ import { useNavigate } from "react-router-dom";
 import ImageButton from "../../components/imagePopup/ImageButton";
 import API from "../../api";
 import GenericAgGrid from "../../components/agGrid/GenericAgGrid";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store/store";
+import { setIsRefreshed } from "../../store/slices/userSlice";
 import { ROUTES } from "../../lib/consts";
 
 const productsColumnDefs = [
@@ -90,12 +91,12 @@ const productsColumnDefs = [
         : [];
       return (
         <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-          {colors.slice(0, 3).map((color: string, index: number) => (
+          {colors.slice(0, 2).map((color: string, index: number) => (
             <Chip key={index} label={color.trim()} size="small" />
           ))}
-          {colors.length > 3 && (
+          {colors.length > 2 && (
             <Chip
-              label={`+${colors.length - 3}`}
+              label={`+${colors.length - 2}`}
               size="small"
               variant="outlined"
             />
@@ -135,7 +136,7 @@ const productsColumnDefs = [
         : [];
       return (
         <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-          {sizes.slice(0, 3).map((size: string, index: number) => (
+          {sizes.slice(0, 2).map((size: string, index: number) => (
             <Chip
               key={index}
               label={size.trim()}
@@ -143,9 +144,9 @@ const productsColumnDefs = [
               color="secondary"
             />
           ))}
-          {sizes.length > 3 && (
+          {sizes.length > 2 && (
             <Chip
-              label={`+${sizes.length - 3}`}
+              label={`+${sizes.length - 2}`}
               size="small"
               variant="outlined"
             />
@@ -171,6 +172,8 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ productData }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isRefreshed = useSelector((state: RootState) => state.user.isRefreshed);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -188,16 +191,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ productData }) => {
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      // Here you would typically make an API call to delete the product
-      console.log("Deleting product:", productData);
+      // Call the actual API to delete the product
+      await API.deleteProduct(productData.id);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // You might want to refresh the grid or show a success message
-      alert("Product deleted successfully!");
-
+      // Close the dialog
       setDeleteDialogOpen(false);
+
+      // Toggle the refresh state (opposite of previous value)
+      dispatch(setIsRefreshed(!isRefreshed));
+
+      console.log("Product deleted successfully!");
     } catch (error) {
       console.error("Error deleting product:", error);
       alert("Failed to delete product. Please try again.");
@@ -207,6 +210,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ productData }) => {
   };
 
   const handleDeleteCancel = () => {
+    // Just close the dialog, don't delete anything
     setDeleteDialogOpen(false);
   };
 
@@ -239,91 +243,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ productData }) => {
           <DeleteIcon fontSize="small" />
         </IconButton>
       </Box>
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleDeleteCancel}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Delete Product</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete "
-            {productData?.name || "this product"}"? This action cannot be
-            undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            variant="contained"
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
-};
-
-// Delete Button Component (keeping for reference)
-interface DeleteButtonProps {
-  productData: any;
-}
-
-const DeleteButton: React.FC<DeleteButtonProps> = ({ productData }) => {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDeleteClick = () => {
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    setIsDeleting(true);
-    try {
-      // Here you would typically make an API call to delete the product
-      console.log("Deleting product:", productData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // You might want to refresh the grid or show a success message
-      alert("Product deleted successfully!");
-
-      setDeleteDialogOpen(false);
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Failed to delete product. Please try again.");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-  };
-
-  return (
-    <>
-      <IconButton
-        color="error"
-        size="small"
-        onClick={handleDeleteClick}
-        sx={{
-          "&:hover": {
-            backgroundColor: "rgba(211, 47, 47, 0.04)",
-          },
-        }}
-      >
-        <DeleteIcon fontSize="small" />
-      </IconButton>
 
       <Dialog
         open={deleteDialogOpen}

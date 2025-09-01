@@ -1,10 +1,12 @@
 export const ROUTES = {
   HOME_PAGE: "/",
   PRODUCTS: "/dashboard/",
-  APPROVED: "/dashboard/approved",
+  COUPON: "/dashboard/coupons",
   REJECTED: "/dashboard/rejected",
   ADD_PRODUCT: "/dashboard/addProduct",
   EDIT_PRODUCT: "/dashboard/editProduct/:id",
+  ADD_COUPON: "/dashboard/addCoupon",
+  EDIT_COUPON: "/dashboard/editCoupon/:id",
 };
 
 export enum LANGUAGE {

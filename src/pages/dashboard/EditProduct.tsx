@@ -21,6 +21,7 @@ import {
   Card,
   CardContent,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -33,6 +34,22 @@ import { ProductValidation } from "../../schema/validationSchema";
 import { ProductRequest } from "../../interface/api";
 import API from "../../api";
 import { ROUTES } from "../../lib/consts";
+
+// Interface for stored product data which might have different types
+interface StoredProductData {
+  id?: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  color?: string | string[];
+  size?: string | string[];
+  images?: string | string[];
+  isFeatured?: boolean;
+  isTop?: boolean;
+  isNew?: boolean;
+  categoryId?: string;
+  inventory?: number;
+}
 
 const colorOptions = [
   "red",
@@ -47,20 +64,6 @@ const colorOptions = [
   "brown",
 ];
 const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
-const categoryOptions = [
-  { value: "mens-clothing", label: "Men's Clothing" },
-  { value: "womens-clothing", label: "Women's Clothing" },
-  { value: "kids-clothing", label: "Kids' Clothing" },
-  { value: "baby-clothing", label: "Baby Clothing" },
-  { value: "formal-wear", label: "Formal Wear" },
-  { value: "casual-wear", label: "Casual Wear" },
-  { value: "activewear", label: "Activewear" },
-  { value: "outerwear", label: "Outerwear" },
-  { value: "underwear", label: "Underwear & Intimates" },
-  { value: "footwear", label: "Footwear" },
-  { value: "accessories", label: "Accessories" },
-  { value: "traditional-wear", label: "Traditional Wear" },
-];
 
 const EditProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -76,7 +79,13 @@ const EditProduct: React.FC = () => {
   >([]);
   const [newColorInput, setNewColorInput] = useState("");
   const [newCategoryInput, setNewCategoryInput] = useState("");
-  const [productData, setProductData] = useState<any>(null);
+  const [productData, setProductData] = useState<StoredProductData | null>(
+    null
+  );
+  const [apiCategories, setApiCategories] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   const handleBackToProducts = () => {
     history.back();
@@ -112,6 +121,45 @@ const EditProduct: React.FC = () => {
         console.error("Error parsing product data:", error);
       }
     }
+  }, []);
+
+  // Fetch categories from API
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await API.getAllCategories();
+        // Handle the correct API response format: array of objects with id and name
+        if (Array.isArray(response)) {
+          const transformedCategories = response.map(
+            (category: { id: string; name: string }) => ({
+              value: category.id,
+              label: category.name,
+            })
+          );
+          setApiCategories(transformedCategories);
+        } else {
+          // Fallback if response is not in expected format
+          setApiCategories([
+            { value: "mens-clothing", label: "Men's Clothing" },
+            { value: "womens-clothing", label: "Women's Clothing" },
+            { value: "kids-clothing", label: "Kids' Clothing" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Fallback to some default categories if API fails
+        setApiCategories([
+          { value: "mens-clothing", label: "Men's Clothing" },
+          { value: "womens-clothing", label: "Women's Clothing" },
+          { value: "kids-clothing", label: "Kids' Clothing" },
+        ]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   const {
@@ -195,7 +243,9 @@ const EditProduct: React.FC = () => {
 
       // Simulate API call for updating product
       console.log("Updating product data:", productUpdateData);
-      await API.updateProducts(productUpdateData, productData.categoryId);
+      if (productData?.categoryId) {
+        await API.updateProducts(productUpdateData, productData.categoryId);
+      }
       await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate(ROUTES.PRODUCTS);
       setSubmitMessage({
@@ -291,11 +341,13 @@ const EditProduct: React.FC = () => {
   const addCustomCategory = () => {
     if (
       newCategoryInput.trim() &&
-      !categoryOptions.some(
-        (cat) => cat.label.toLowerCase() === newCategoryInput.toLowerCase()
+      !apiCategories.some(
+        (cat: { value: string; label: string }) =>
+          cat.label.toLowerCase() === newCategoryInput.toLowerCase()
       ) &&
       !customCategories.some(
-        (cat) => cat.label.toLowerCase() === newCategoryInput.toLowerCase()
+        (cat: { value: string; label: string }) =>
+          cat.label.toLowerCase() === newCategoryInput.toLowerCase()
       )
     ) {
       const newCategory = {
@@ -322,7 +374,7 @@ const EditProduct: React.FC = () => {
 
   // Combine default and custom options
   const allColors = [...colorOptions, ...customColors];
-  const allCategories = [...categoryOptions, ...customCategories];
+  const allCategories = [...apiCategories, ...customCategories];
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
@@ -381,31 +433,58 @@ const EditProduct: React.FC = () => {
                         control={control}
                         render={({ field }) => (
                           <FormControl fullWidth error={!!errors.categoryId}>
-                            <InputLabel>Category</InputLabel>
-                            <Select {...field} label="Category">
-                              {allCategories.map((category) => (
-                                <MenuItem
-                                  key={category.value}
-                                  value={category.value}
-                                >
-                                  {category.label}
-                                  {customCategories.some(
-                                    (cat) => cat.value === category.value
-                                  ) && (
-                                    <IconButton
-                                      size="small"
-                                      color="error"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeCustomCategory(category);
-                                      }}
-                                      sx={{ ml: 1 }}
-                                    >
-                                      <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                  )}
+                            <InputLabel>
+                              {categoriesLoading
+                                ? "Loading Categories..."
+                                : "Category"}
+                            </InputLabel>
+                            <Select
+                              {...field}
+                              label={
+                                categoriesLoading
+                                  ? "Loading Categories..."
+                                  : "Category"
+                              }
+                              disabled={categoriesLoading}
+                            >
+                              {categoriesLoading ? (
+                                <MenuItem disabled>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1,
+                                    }}
+                                  >
+                                    <CircularProgress size={16} />
+                                    Loading categories...
+                                  </Box>
                                 </MenuItem>
-                              ))}
+                              ) : (
+                                allCategories.map((category) => (
+                                  <MenuItem
+                                    key={category.value}
+                                    value={category.value}
+                                  >
+                                    {category.label}
+                                    {customCategories.some(
+                                      (cat) => cat.value === category.value
+                                    ) && (
+                                      <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeCustomCategory(category);
+                                        }}
+                                        sx={{ ml: 1 }}
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    )}
+                                  </MenuItem>
+                                ))
+                              )}
                             </Select>
                             {errors.categoryId && (
                               <FormHelperText>
@@ -434,13 +513,16 @@ const EditProduct: React.FC = () => {
                               addCustomCategory();
                             }
                           }}
+                          disabled={categoriesLoading}
                           sx={{ flexGrow: 1 }}
                         />
                         <Button
                           variant="outlined"
                           size="small"
                           onClick={addCustomCategory}
-                          disabled={!newCategoryInput.trim()}
+                          disabled={
+                            !newCategoryInput.trim() || categoriesLoading
+                          }
                         >
                           Add
                         </Button>

@@ -2,6 +2,8 @@
 import {
   AuthResponse,
   BaseResponse,
+  CouponRequest,
+  CouponResponse,
   DashboardCountResponse,
   GenericRecord,
   GetAnyDataResponse,
@@ -52,6 +54,12 @@ class APIS {
     });
   }
 
+  getAllCategories(): Promise<GetProductsResponse> {
+    return authorizedApiCall("/api/categories", undefined, "GET", {
+      success: "Categories fetched successfully!",
+      error: "Failed to fetch categories.",
+    });
+  }
   getAllProducts(): Promise<GetProductsResponse> {
     return authorizedApiCall("/api/products", undefined, "GET", {
       success: "Products fetched successfully!",
@@ -71,7 +79,44 @@ class APIS {
     });
   }
 
-  //
+  deleteProduct(id: string): Promise<BaseResponse> {
+    return authorizedApiCall(`/api/products/${id}`, {}, "DELETE", {
+      success: "Product deleted successfully!",
+      error: "Failed to delete product.",
+    });
+  }
+
+  getAllCoupons(): Promise<GenericRecord[]> {
+    return authorizedApiCall("/api/coupons", undefined, "GET", {
+      success: "Coupons fetched successfully!",
+      error: "Failed to fetch coupons.",
+    });
+  }
+
+  getCoupon(id: string): Promise<CouponResponse> {
+    return authorizedApiCall(`/api/coupons/${id}`, undefined, "GET", {
+      success: "Coupon fetched successfully!",
+      error: "Failed to fetch coupon.",
+    });
+  }
+  updateCoupon(id: string, data: CouponRequest): Promise<CouponResponse> {
+    return authorizedApiCall(`/api/coupons/${id}`, data, "PUT", {
+      success: "Coupon updated successfully!",
+      error: "Failed to update coupon.",
+    });
+  }
+  addCoupon(data: CouponRequest): Promise<CouponResponse> {
+    return authorizedApiCall("/api/coupons", data, "POST", {
+      success: "Coupon added successfully!",
+      error: "Failed to add coupon.",
+    });
+  }
+  deleteCoupon(id: string): Promise<BaseResponse> {
+    return authorizedApiCall(`/api/coupons/${id}`, {}, "DELETE", {
+      success: "Coupon deleted successfully!",
+      error: "Failed to delete coupon.",
+    });
+  }
 
   async logout(): Promise<BaseResponse> {
     this.showLoader("Logout...");

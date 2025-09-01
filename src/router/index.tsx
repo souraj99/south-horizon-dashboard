@@ -7,6 +7,9 @@ import PrivateRoute from "../helpers/PrivateRoute.tsx";
 import Rejected from "../pages/dashboard/Rejected.tsx";
 import AddProduct from "../pages/dashboard/AddProduct.tsx";
 import EditProduct from "../pages/dashboard/EditProduct.tsx";
+import AddCoupon from "../pages/dashboard/AddCoupon.tsx";
+import EditCoupon from "../pages/dashboard/EditCoupon.tsx";
+import Coupons from "../pages/dashboard/Coupons.tsx";
 
 export const router = createBrowserRouter(
   [
@@ -27,12 +30,24 @@ export const router = createBrowserRouter(
           element: <Products />,
         },
         {
+          path: ROUTES.COUPON,
+          element: <Coupons />,
+        },
+        {
           path: ROUTES.ADD_PRODUCT,
           element: <AddProduct />,
         },
         {
           path: ROUTES.EDIT_PRODUCT,
           element: <EditProduct />,
+        },
+        {
+          path: ROUTES.ADD_COUPON,
+          element: <AddCoupon />,
+        },
+        {
+          path: ROUTES.EDIT_COUPON,
+          element: <EditCoupon />,
         },
       ],
     },

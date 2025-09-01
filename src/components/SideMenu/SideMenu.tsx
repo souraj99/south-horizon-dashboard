@@ -47,6 +47,11 @@ const SideMenu = () => {
       route: ROUTES.PRODUCTS,
       icon: "products",
     },
+    {
+      title: "Coupons",
+      route: ROUTES.COUPON,
+      icon: "coupons",
+    },
   ];
 
   return (
