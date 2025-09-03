@@ -48,7 +48,7 @@ class APIS {
   }
 
   loginUser(data: LoginUserRequest): Promise<AuthResponse> {
-    return unauthorizedApiCall("/admin/login", data, "POST", {
+    return unauthorizedApiCall("/api/auth/login", data, "POST", {
       success: "Login successful!",
       error: "Invalid email or password.",
     });
