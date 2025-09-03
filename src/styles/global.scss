@@ -171,6 +171,15 @@ label {
       &.download {
         padding: 0;
       }
+      &.delete {
+        background: var(--red);
+      }
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        user-select: none;
+        touch-action: none;
+      }
     }
   }
 

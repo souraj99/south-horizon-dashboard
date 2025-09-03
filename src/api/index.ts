@@ -48,7 +48,7 @@ class APIS {
   }
 
   loginUser(data: LoginUserRequest): Promise<AuthResponse> {
-    return unauthorizedApiCall("/api/auth/login", data, "POST", {
+    return unauthorizedApiCall("/admin/login", data, "POST", {
       success: "Login successful!",
       error: "Invalid email or password.",
     });
@@ -125,7 +125,7 @@ class APIS {
     });
   }
   deleteBulkCoupons(ids: string[]): Promise<CouponResponse> {
-    return authorizedApiCall(`/api/coupons/bulk-delete`, { ids }, "DELETE", {
+    return authorizedApiCall(`/api/coupons/bulk/delete`, { ids }, "DELETE", {
       success: "Coupons deleted successfully!",
       error: "Failed to delete coupons.",
     });

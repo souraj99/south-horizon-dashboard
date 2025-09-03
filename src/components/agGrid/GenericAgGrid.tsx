@@ -64,6 +64,7 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
   const [rowData, setRowData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedRowsCount, setSelectedRowsCount] = useState(0);
   const navigate = useNavigate();
   const defaultColDef = useMemo(
     () => ({
@@ -75,7 +76,9 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
     []
   );
   const onBtnExport = useCallback(() => {
-    gridRef.current!.api.exportDataAsCsv();
+    if (gridRef.current?.api) {
+      gridRef.current.api.exportDataAsCsv();
+    }
   }, []);
   const fetchTableData = useCallback(() => {
     fetchData()
@@ -95,18 +98,27 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
         setLoading(false);
         console.error(err);
       });
-  }, [fetchData]);
+  }, [fetchData, type]);
 
   const onFilterTextBoxChanged = useCallback(() => {
-    gridRef.current!.api.setGridOption(
-      "quickFilterText",
-      (document.getElementById("filter-text-box") as HTMLInputElement).value
-    );
-  }, [refreshStatus]);
+    if (gridRef.current?.api) {
+      gridRef.current.api.setGridOption(
+        "quickFilterText",
+        (document.getElementById("filter-text-box") as HTMLInputElement).value
+      );
+    }
+  }, []);
 
   const onGridReady = useCallback(() => {
     fetchTableData();
   }, [fetchTableData]);
+
+  const onSelectionChanged = useCallback(() => {
+    if (gridRef.current?.api) {
+      const selectedRows = gridRef.current.api.getSelectedRows();
+      setSelectedRowsCount(selectedRows.length);
+    }
+  }, []);
 
   useEffect(() => {
     // console.log("refreshStatus changed:", refreshStatus);
@@ -140,16 +152,18 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
   }, []);
 
   const handleBulkCouponDelete = () => {
-    const selectedRows = gridRef.current!.api.getSelectedRows();
-    const ids = selectedRows.map((row) => row.id);
-    if (ids.length > 0) {
-      API.deleteBulkCoupons(ids)
-        .then(() => {
-          fetchTableData();
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+    if (gridRef.current?.api) {
+      const selectedRows = gridRef.current.api.getSelectedRows();
+      const ids = selectedRows.map((row) => row.id);
+      if (ids.length > 0) {
+        API.deleteBulkCoupons(ids)
+          .then(() => {
+            fetchTableData();
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     }
   };
 
@@ -179,9 +193,9 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
           {type === "coupons" && (
             <>
               <button
-                className="add-campaign-button"
+                className="add-campaign-button delete"
                 onClick={handleBulkCouponDelete}
-                disabled={!gridRef.current!.api.getSelectedRows().length}
+                disabled={selectedRowsCount === 0}
               >
                 Delete Coupons
               </button>
@@ -210,6 +224,7 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             onGridReady={onGridReady}
+            onSelectionChanged={onSelectionChanged}
             animateRows={true}
             pagination={true}
             paginationPageSize={10}

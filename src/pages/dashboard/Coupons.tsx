@@ -248,25 +248,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ couponData }) => {
 };
 
 const Coupons: React.FC = () => {
-  const navigate = useNavigate();
   const isRefreshed = useSelector((state: RootState) => state.user.isRefreshed);
-
-  const handleAddCoupon = () => {
-    navigate(ROUTES.ADD_COUPON);
-  };
 
   return (
     <>
-      <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddCoupon}
-        >
-          Add Coupon
-        </Button>
-      </Box>
-
       <GenericAgGrid
         title="Coupons Overview"
         columnDefs={couponsColumnDefs}
