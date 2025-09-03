@@ -28,6 +28,7 @@ import { setIsRefreshed } from "../../store/slices/userSlice";
 import DynamicLottie from "../../assets/lottie/DynamicLottie";
 import { useNavigate } from "react-router";
 import { ROUTES } from "../../lib/consts";
+import API from "../../api";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -138,6 +139,20 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
     };
   }, []);
 
+  const handleBulkCouponDelete = () => {
+    const selectedRows = gridRef.current!.api.getSelectedRows();
+    const ids = selectedRows.map((row) => row.id);
+    if (ids.length > 0) {
+      API.deleteBulkCoupons(ids)
+        .then(() => {
+          fetchTableData();
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  };
+
   return (
     <div style={containerStyle}>
       <div className="grid-wrapper">
@@ -162,12 +177,22 @@ const GenericAgGrid: React.FC<GenericAgGridProps> = ({
             </button>
           )}
           {type === "coupons" && (
-            <button
-              className="add-campaign-button"
-              onClick={() => navigate(ROUTES.ADD_COUPON)}
-            >
-              Add Coupon
-            </button>
+            <>
+              <button
+                className="add-campaign-button"
+                onClick={handleBulkCouponDelete}
+                disabled={!gridRef.current!.api.getSelectedRows().length}
+              >
+                Delete Coupons
+              </button>
+
+              <button
+                className="add-campaign-button"
+                onClick={() => navigate(ROUTES.ADD_COUPON)}
+              >
+                Add Coupon
+              </button>
+            </>
           )}
 
           <button

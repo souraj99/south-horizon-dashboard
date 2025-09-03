@@ -23,6 +23,96 @@ import { setIsRefreshed } from "../../store/slices/userSlice";
 import { useState } from "react";
 import { ROUTES } from "../../lib/consts";
 
+// Status Toggle Component
+interface StatusToggleProps {
+  couponData: any;
+}
+
+const StatusToggle: React.FC<StatusToggleProps> = ({ couponData }) => {
+  const dispatch = useDispatch();
+  const isRefreshed = useSelector((state: RootState) => state.user.isRefreshed);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleStatusClick = () => {
+    setStatusDialogOpen(true);
+  };
+
+  const handleStatusToggleConfirm = async () => {
+    setIsToggling(true);
+    try {
+      // Call the toggle API
+      await API.toggleCoupon(couponData.id);
+
+      // Close the dialog
+      setStatusDialogOpen(false);
+
+      // Toggle the refresh state (opposite of previous value)
+      dispatch(setIsRefreshed(!isRefreshed));
+
+      console.log("Coupon status toggled successfully!");
+    } catch (error) {
+      console.error("Error toggling coupon status:", error);
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const handleStatusToggleCancel = () => {
+    setStatusDialogOpen(false);
+  };
+
+  return (
+    <>
+      <Chip
+        label={couponData.isActive ? "Active" : "Inactive"}
+        color={couponData.isActive ? "success" : "default"}
+        size="small"
+        onClick={handleStatusClick}
+        sx={{
+          cursor: "pointer",
+          "&:hover": {
+            backgroundColor: couponData.isActive
+              ? "rgba(46, 125, 50, 0.1)"
+              : "rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      />
+
+      <Dialog
+        open={statusDialogOpen}
+        onClose={handleStatusToggleCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Toggle Coupon Status</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to{" "}
+            {couponData.isActive ? "deactivate" : "activate"} the coupon "
+            {couponData?.code || "this coupon"}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleStatusToggleCancel} disabled={isToggling}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleStatusToggleConfirm}
+            color="primary"
+            variant="contained"
+            disabled={isToggling}
+          >
+            {isToggling
+              ? "Toggling..."
+              : `${couponData.isActive ? "Deactivate" : "Activate"}`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
 const couponsColumnDefs = [
   { headerName: "Code", field: "code" },
   {
@@ -52,13 +142,10 @@ const couponsColumnDefs = [
   {
     headerName: "Status",
     field: "isActive",
-    cellRenderer: (params: any) => (
-      <Chip
-        label={params.value ? "Active" : "Inactive"}
-        color={params.value ? "success" : "default"}
-        size="small"
-      />
-    ),
+    cellRenderer: (params: any) => <StatusToggle couponData={params.data} />,
+    width: 100,
+    sortable: false,
+    filter: false,
   },
   { headerName: "Description", field: "description" },
   {
@@ -161,9 +248,25 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ couponData }) => {
 };
 
 const Coupons: React.FC = () => {
+  const navigate = useNavigate();
   const isRefreshed = useSelector((state: RootState) => state.user.isRefreshed);
+
+  const handleAddCoupon = () => {
+    navigate(ROUTES.ADD_COUPON);
+  };
+
   return (
     <>
+      <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddCoupon}
+        >
+          Add Coupon
+        </Button>
+      </Box>
+
       <GenericAgGrid
         title="Coupons Overview"
         columnDefs={couponsColumnDefs}

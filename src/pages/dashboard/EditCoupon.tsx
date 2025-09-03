@@ -175,8 +175,6 @@ const EditCoupon: React.FC = () => {
       // Here you would typically make an API call
       // await updateCoupon(couponId, couponData);
 
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-
       setSubmitMessage({
         type: "success",
         message: "Coupon updated successfully!",

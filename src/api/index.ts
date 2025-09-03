@@ -99,6 +99,13 @@ class APIS {
       error: "Failed to fetch coupon.",
     });
   }
+  toggleCoupon(id: string): Promise<CouponResponse> {
+    return authorizedApiCall(`/api/coupons/${id}/toggle`, undefined, "PATCH", {
+      success: "Coupon toggled successfully!",
+      error: "Failed to toggle coupon.",
+    });
+  }
+
   updateCoupon(id: string, data: CouponRequest): Promise<CouponResponse> {
     return authorizedApiCall(`/api/coupons/${id}`, data, "PUT", {
       success: "Coupon updated successfully!",
@@ -115,6 +122,12 @@ class APIS {
     return authorizedApiCall(`/api/coupons/${id}`, {}, "DELETE", {
       success: "Coupon deleted successfully!",
       error: "Failed to delete coupon.",
+    });
+  }
+  deleteBulkCoupons(ids: string[]): Promise<CouponResponse> {
+    return authorizedApiCall(`/api/coupons/bulk-delete`, { ids }, "DELETE", {
+      success: "Coupons deleted successfully!",
+      error: "Failed to delete coupons.",
     });
   }
 

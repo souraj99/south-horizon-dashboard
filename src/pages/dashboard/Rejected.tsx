@@ -34,7 +34,6 @@ const Rejected = () => {
         columnDefs={campaignColumnDefs}
         fetchData={API.getRejectedData}
         refreshStatus={isRefreshed}
-        lottieFile={<SectionAnim type="rejected" shouldPlay={true} />}
       />
     </>
   );

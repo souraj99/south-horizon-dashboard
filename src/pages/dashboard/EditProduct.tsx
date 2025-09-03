@@ -246,7 +246,6 @@ const EditProduct: React.FC = () => {
       if (productData?.categoryId) {
         await API.updateProducts(productUpdateData, productData.categoryId);
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate(ROUTES.PRODUCTS);
       setSubmitMessage({
         type: "success",

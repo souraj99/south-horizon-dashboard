@@ -61,7 +61,7 @@ const Login = () => {
 
   useEffect(() => {
     if (accessToken) {
-      navigate(ROUTES.PENDING);
+      navigate(ROUTES.PRODUCTS);
     }
   }, [accessToken, navigate]);
 
